@@ -1,1 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+@import '../src/app/System_Styles/modules/import-modules.scss';
+@import '../src/app/System_Styles/utilities/import-utilies.scss';
+@import '../src/app/System_Styles/base/import-base.scss';
+@import '../src/app/System_Styles/theme/import-theme.scss';

@@ -1,0 +1,29 @@
+<div class="container">
+  <div class="row">
+    <!-- Noticia principal -->
+    <div class="col-7" *ngIf="!isLoading && mainStory">
+      <img [src]="mainStory.urlToImage" alt="{{ mainStory.title }}" class="story-detail__img mb-4" />
+      <a [routerLink]="['/news', mainStory.title | slugify]" class="large-title  main-story-title">{{ mainStory.title }}</a>
+      <p class="main-story-description">{{ mainStory.description }}</p>
+      <p class="author">{{ mainStory.author}}</p>
+    </div>
+
+    <!-- Noticias más leídas -->
+    <div class="col-5">
+      <div *ngIf="!isLoading && topStories.length > 0" class="top-stories">
+        <h2 class="md-title pb-2">Más leídas</h2>
+        <ol>
+          <li *ngFor="let story of topStories" class="top-stories__item">
+            <a [routerLink]="['/news', story.title | slugify]" class="small-title">{{ story.title }}</a>
+            <p class="author mt-4">{{ story.source.name }}</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sin noticias -->
+<div *ngIf="!isLoading && topStories.length === 0">
+  <p>No se encontraron noticias.</p>
+</div>

@@ -1,0 +1,43 @@
+.large-title {
+    font-family: "GT Sectra";
+    font-size: 41px;
+    line-height: 1.1em;
+    font-weight: 700;
+    margin: 0;
+}
+
+.author {
+        font-family: 'source sans pro', sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 12px;
+
+    
+}
+
+.small-title {
+    font-size: 22px;
+    line-height: 120%;
+    text-transform: none;
+    font-family: "GT Sectra";
+    font-weight: 600;
+}
+
+ol li::marker {
+    font-size: 40px;
+    font-weight: bold;
+    font-family: "PT Serif";
+    line-height: 1;
+    color: #fb5954 !important;
+
+}
+
+.md-title {
+    border-bottom: 2px #000 solid;
+    font-size: 27px;
+    font-family: "GT Sectra";
+    font-size: 2.7rem;
+    line-height: 1.1em;
+    font-weight: 700;
+
+}

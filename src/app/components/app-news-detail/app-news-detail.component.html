@@ -1,0 +1,32 @@
+<div class="news-detail">
+  <h1>Detalle de la noticia</h1>
+
+  <div *ngIf="isLoading">
+    <p>Cargando los detalles de la noticia...</p>
+  </div>
+  <div class="container">
+
+    <div class="row">
+      <div class="col-12">
+        <div *ngIf="!isLoading && news; else loading" class="story-detail">
+          <h2 class="">{{ news.title }}</h2>
+          <p><strong>Publicado por:</strong> {{ news.source.name }}</p>
+          <p><strong>Fecha:</strong> {{ news.publishedAt | date }}</p>
+
+          <!-- Imagen de la noticia (si existe) -->
+          <div *ngIf="news.urlToImage">
+            <img [src]="news.urlToImage" alt="{{ news.title }}" class="story-detail__img" />
+          </div>
+
+          <div class="content">
+            <p>{{ news.description }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #loading>
+    <p>No se encontró la noticia.</p>
+  </ng-template>
+</div>
