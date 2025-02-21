@@ -1,26 +1,33 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { tap, catchError } from 'rxjs/operators';
 
 @Injectable({
-  providedIn: 'root',
+  providedIn: 'root'
 })
 export class TranslateService {
-  private translateUrl = 'https://libretranslate.de/translate';
+  private apiUrl = 'https://libretranslate.com/translate'; // URL de tu API
 
   constructor(private http: HttpClient) {}
 
-  translate(text: string, targetLanguage: string, sourceLanguage = 'en'): Observable<string> {
-    const body = {
-      q: text,
-      source: sourceLanguage,
-      target: targetLanguage,
-      format: 'text',
-    };
+  translateText(text: string): Observable<any> {
+    const params = new HttpParams()
+      .set('q', text)
+      .set('source', 'en') // Idioma de origen
+      .set('target', 'es') // Idioma de destino
+      .set('format', 'text') // Formato de texto
+      .set('api_key', '2c53748a-543d-4bf1-abb9-ef5bf7512367'); // Tu API key
 
-    return this.http.post<any>(this.translateUrl, body).pipe(
-      map((response) => response.translatedText)
+    // Realizamos la solicitud HTTP
+    return this.http.post<any>(this.apiUrl, params).pipe(
+      tap(response => {
+        console.log('API Response:', response);
+      }),
+      catchError((error) => {
+        console.error('Error en la solicitud', error);
+        throw error;
+      })
     );
   }
 }

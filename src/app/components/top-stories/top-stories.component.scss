@@ -1,0 +1,20 @@
+li  {
+    position: relative;
+    cursor: pointer;
+  }
+  
+  .buttons {
+    display: none;
+    margin-top: 8px;
+  }
+  
+  li:hover .buttons {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 30px;
+    position: absolute;
+    z-index: 10;
+    margin-top: -60px;
+    margin-left: 60%;
+  }
+  
