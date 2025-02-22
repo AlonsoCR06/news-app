@@ -3,45 +3,67 @@
     <!-- Noticia principal -->
     <div class="col-7" *ngIf="!isLoading && topStories.length > 0">
       <img [src]="topStories[0].urlToImage" alt="{{ topStories[0].title }}" class="story-detail__img mb-4" />
-      <!-- Link mantiene la URL original -->
       <a [routerLink]="['/news', originalTopStories[0].title | slugify]" class="large-title main-story-title">
         {{ topStories[0].title }}
       </a>
       <p class="main-story-description">{{ topStories[0].description }}</p>
       <p class="author">{{ topStories[0].author }}</p>
       <button (click)="translateStory(topStories[0], 0)" [disabled]="isTranslating || topStories[0].isTranslated">
-        Translate
+        <img src="images/spain.png" alt="" style="height: 30px;">
       </button>
       <button (click)="toggleTranslation(topStories[0], 0)">
-        {{ topStories[0].isTranslated ? 'Show Original' : 'Show Translated' }}
+        <img src="images/united-kingdom.png" alt="" style="height: 30px;">
       </button>
     </div>
 
     <!-- Noticias más leídas -->
     <div class="col-5">
       <div *ngIf="!isLoading && topStories.length > 1" class="top-stories">
-        <h2 class="md-title pb-2">
-          {{ translatedHeader || originalHeader }}
-        </h2>
-    
+        <h2 class="md-title pb-2">{{ translatedHeader || originalHeader }}</h2>
         <ol>
           <li *ngFor="let story of topStories.slice(1, 6); let i = index" class="top-stories__item">
-            <!-- Link mantiene la URL original usando originalTopStories -->
             <a [routerLink]="['/news', originalTopStories[i + 1].title | slugify]" class="small-title">
               {{ story.title }}
             </a>
             <p class="author mt-4">{{ story.source.name }}</p>
             <div class="buttons">
-            <button (click)="translateStory(story, i + 1)" [disabled]="isTranslating || story.isTranslated">
-              <img src="images/spain.png" alt="" style="height: 30px;">
-            </button>
-            <button (click)="toggleTranslation(story, i + 1)">
-              <img src="images/united-kingdom.png" alt="" style="height: 30px;">
-            </button>
-          </div>
+              <button (click)="translateStory(story, i + 1)" [disabled]="isTranslating || story.isTranslated">
+                <img src="images/spain.png" alt="" style="height: 30px;">
+              </button>
+              <button (click)="toggleTranslation(story, i + 1)">
+                <img src="images/united-kingdom.png" alt="" style="height: 30px;">
+              </button>
+            </div>
           </li>
         </ol>
       </div>
+    </div>
+  </div>
+
+  <!-- Noticias en columnas de 3 -->
+  <div class="row">
+    <div class="col-3 p-2" *ngFor="let story of visibleStories; let i = index">
+      <img style="width: 100%; height: 400px; object-fit: cover;" [src]="story.urlToImage || 'https://picsum.photos/200/300'" alt="Imagen">
+      <a [routerLink]="['/news', originalTopStories[i + 6].title | slugify]" class="small-title">
+        {{ story.title }}
+      </a>
+      <p class="main-story-description">{{ story.description }}</p>
+      <p class="author mt-4">{{ story.source.name }}</p>
+      <div class="buttons">
+        <button (click)="translateStory(story, i + 6)" [disabled]="isTranslating || story.isTranslated">
+          <img src="images/spain.png" alt="" style="height: 30px;">
+        </button>
+        <button (click)="toggleTranslation(story, i + 6)">
+          <img src="images/united-kingdom.png" alt="" style="height: 30px;">
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botón para cargar más noticias -->
+  <div class="row" *ngIf="remainingStories.length > 0">
+    <div class="col-12 text-center">
+      <button (click)="loadMore()" class="btn btn-primary mt-4">Cargar más</button>
     </div>
   </div>
 
