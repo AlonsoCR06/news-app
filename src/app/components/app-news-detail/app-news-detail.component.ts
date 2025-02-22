@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NewsService } from '../../services/news.service';
-import { News } from '../../models/news.model';  // Asegúrate de importar el modelo
+import { TranslateService } from '../../services/translate.service'; // Importa el servicio de traducción
+import { News } from '../../models/news.model';
 
 @Component({
   selector: 'app-news-detail',
@@ -9,42 +10,89 @@ import { News } from '../../models/news.model';  // Asegúrate de importar el mo
   styleUrls: ['./app-news-detail.component.scss']
 })
 export class NewsDetailComponent implements OnInit {
-  newsTitle: string | null = null;  // Título de la noticia (slug)
-  news: News | null | undefined = null;         // Permitir también 'undefined'
-  isLoading: boolean = true;        // Indicador de carga
+  newsTitle: string | null = null;
+  news: News | null = null;
+  isLoading: boolean = true;
+  isTranslating: boolean = false;
+  originalNews: News | null = null; // Guarda la noticia original en inglés
 
   constructor(
     private route: ActivatedRoute,
-    private newsService: NewsService
+    private newsService: NewsService,
+    private translateService: TranslateService // Inyecta el servicio de traducción
   ) {}
 
   ngOnInit(): void {
-    // Obtener el parámetro de la URL
     this.route.paramMap.subscribe(params => {
       this.newsTitle = params.get('slug');
       if (this.newsTitle) {
-        this.fetchNewsDetails(this.newsTitle);  // Llamamos al método para obtener los detalles de la noticia
+        this.fetchNewsDetails(this.newsTitle);
       }
     });
   }
 
-  // Método para obtener los detalles de la noticia usando el 'slug'
   fetchNewsDetails(slug: string): void {
     this.newsService.getTopStories().subscribe(
       (data) => {
-        // Buscar la noticia correspondiente con el slug
-        this.news = data.articles.find(article => this.transformToSlug(article.title) === slug);
-        this.isLoading = false;  // Cambiar el estado de carga a falso
+        const article = data.articles.find(article => this.transformToSlug(article.title) === slug);
+        if (article) {
+          this.news = { ...article, isTranslated: false }; // Inicializa la noticia con isTranslated en false
+          this.originalNews = { ...article }; // Guarda la noticia original
+        }
+        this.isLoading = false;
       },
       (error) => {
         console.error('Error al obtener noticias:', error);
-        this.isLoading = false;  // En caso de error, también cambiamos el estado de carga
+        this.isLoading = false;
       }
     );
   }
 
-  // Método para convertir el título a slug
   transformToSlug(title: string): string {
     return title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  }
+
+  translateNews(): void {
+    if (!this.news) return;
+
+    this.isTranslating = true;
+    this.translateService.translateText(this.news.title).subscribe(
+      (response) => {
+        if (this.news) {
+          this.news.title = response.translatedText;
+          this.translateService.translateText(this.news.description).subscribe(
+            (responseDesc) => {
+              if (this.news) {
+                this.news.description = responseDesc.translatedText;
+                this.news.isTranslated = true;
+                this.isTranslating = false;
+              }
+            },
+            (error) => {
+              console.error('Error traduciendo descripción de noticia', error);
+              this.isTranslating = false;
+            }
+          );
+        }
+      },
+      (error) => {
+        console.error('Error traduciendo título de noticia', error);
+        this.isTranslating = false;
+      }
+    );
+  }
+
+  toggleTranslation(): void {
+    if (!this.news || !this.originalNews) return;
+
+    if (this.news.isTranslated) {
+      // Restaurar la noticia original
+      this.news.title = this.originalNews.title;
+      this.news.description = this.originalNews.description;
+      this.news.isTranslated = false;
+    } else {
+      // Traducir la noticia
+      this.translateNews();
+    }
   }
 }
