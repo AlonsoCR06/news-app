@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { NewsService } from '../../services/news.service';
 import { TranslateService } from '../../services/translate.service';
+import { TranslationStateService } from '../../services/translation-state.service'; // Importa el servicio
+import { News } from '../../models/news.model'; // Importa el modelo News
 
 @Component({
   selector: 'app-top-stories',
@@ -8,10 +10,10 @@ import { TranslateService } from '../../services/translate.service';
   styleUrls: ['./top-stories.component.scss'],
 })
 export class TopStoriesComponent implements OnInit {
-  topStories: any[] = []; // Noticias en español
-  originalTopStories: any[] = []; // Noticias originales en inglés
-  visibleStories: any[] = []; // Noticias que se muestran en col-3
-  remainingStories: any[] = []; // Noticias restantes
+  topStories: News[] = []; // Noticias en español
+  originalTopStories: News[] = []; // Noticias originales en inglés
+  visibleStories: News[] = []; // Noticias que se muestran en col-3
+  remainingStories: News[] = []; // Noticias restantes
   isLoading: boolean = true;
   isTranslating: boolean = false;
   translatedHeader: string = '';
@@ -20,7 +22,8 @@ export class TopStoriesComponent implements OnInit {
 
   constructor(
     private newsService: NewsService,
-    private translateService: TranslateService
+    private translateService: TranslateService,
+    private translationStateService: TranslationStateService // Inyecta el servicio
   ) {}
 
   ngOnInit(): void {
@@ -33,10 +36,12 @@ export class TopStoriesComponent implements OnInit {
         const articles = data.articles;
         if (articles.length > 0) {
           this.originalTopStories = articles;
-          this.topStories = [...this.originalTopStories].map(story => ({
-            ...story, isTranslated: false
-          }));
-          this.initializeStories();
+          this.topStories = articles.map((story) => {
+            // Verifica si la noticia ya está traducida
+            const translatedStory = this.translationStateService.getTranslatedStory(story.title);
+            return translatedStory ? translatedStory : { ...story, isTranslated: false };
+          });
+          this.initializeStories(); // Inicializa las noticias visibles
         }
         this.isLoading = false;
       },
@@ -50,7 +55,7 @@ export class TopStoriesComponent implements OnInit {
   initializeStories(): void {
     // Noticias a partir de la séptima
     this.remainingStories = this.topStories.slice(6);
-    // Mostrar las primeras 2 noticias en col-3
+    // Mostrar las primeras 4 noticias en col-3
     this.visibleStories = this.remainingStories.splice(0, this.storiesPerLoad);
   }
 
@@ -59,15 +64,38 @@ export class TopStoriesComponent implements OnInit {
     this.visibleStories = [...this.visibleStories, ...nextStories];
   }
 
-  translateStory(story: any, index: number): void {
+  translateStory(story: News, index: number): void {
+    if (story.isTranslated) {
+      console.log(`[TopStoriesComponent] La noticia "${story.title}" ya está traducida. No se traducirá de nuevo.`);
+      return;
+    }
+
     this.isTranslating = true;
     this.translateService.translateText(story.title).subscribe(
       (response) => {
-        this.topStories[index].title = response.translatedText;
+        const translatedTitle = response.translatedText;
         this.translateService.translateText(story.description).subscribe(
           (responseDesc) => {
-            this.topStories[index].description = responseDesc.translatedText;
-            this.topStories[index].isTranslated = true;
+            const translatedDescription = responseDesc.translatedText;
+
+            // Guardar la traducción en el servicio
+            const translatedStory = {
+              ...story,
+              translatedTitle: translatedTitle,
+              translatedDescription: translatedDescription,
+              isTranslated: true,
+            };
+            this.translationStateService.setTranslatedStory(translatedStory);
+
+            // Actualizar la noticia en la lista
+            this.topStories[index] = translatedStory;
+
+            // Actualizar visibleStories si la noticia traducida está en ella
+            const visibleIndex = this.visibleStories.findIndex(s => s.title === story.title);
+            if (visibleIndex !== -1) {
+              this.visibleStories[visibleIndex] = translatedStory;
+            }
+
             this.isTranslating = false;
           },
           (error) => {
@@ -83,12 +111,28 @@ export class TopStoriesComponent implements OnInit {
     );
   }
 
-  toggleTranslation(story: any, index: number): void {
+  toggleTranslation(story: News, index: number): void {
     if (this.topStories[index].isTranslated) {
+      // Restaurar la noticia original
       this.topStories[index].title = this.originalTopStories[index].title;
       this.topStories[index].description = this.originalTopStories[index].description;
       this.topStories[index].isTranslated = false;
+
+      // Actualizar el servicio con la noticia restaurada
+      const restoredStory = {
+        ...this.topStories[index],
+        translatedTitle: this.originalTopStories[index].title,
+        translatedDescription: this.originalTopStories[index].description,
+      };
+      this.translationStateService.setTranslatedStory(restoredStory);
+
+      // Actualizar visibleStories si la noticia restaurada está en ella
+      const visibleIndex = this.visibleStories.findIndex(s => s.title === story.title);
+      if (visibleIndex !== -1) {
+        this.visibleStories[visibleIndex] = restoredStory;
+      }
     } else {
+      // Traducir la noticia
       this.translateStory(story, index);
     }
   }

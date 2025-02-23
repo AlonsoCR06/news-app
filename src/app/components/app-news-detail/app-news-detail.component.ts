@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { NewsService } from '../../services/news.service';
-import { TranslateService } from '../../services/translate.service'; // Importa el servicio de traducción
-import { News } from '../../models/news.model';
+import { TranslateService } from '../../services/translate.service';
+import { TranslationStateService } from '../../services/translation-state.service'; // Importa el servicio
+import { News } from '../../models/news.model'; // Importa el modelo News
 
 @Component({
   selector: 'app-news-detail',
   templateUrl: './app-news-detail.component.html',
-  styleUrls: ['./app-news-detail.component.scss']
+  styleUrls: ['./app-news-detail.component.scss'],
 })
 export class NewsDetailComponent implements OnInit {
   newsTitle: string | null = null;
@@ -19,11 +20,12 @@ export class NewsDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private newsService: NewsService,
-    private translateService: TranslateService // Inyecta el servicio de traducción
+    private translateService: TranslateService,
+    private translationStateService: TranslationStateService // Inyecta el servicio
   ) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       this.newsTitle = params.get('slug');
       if (this.newsTitle) {
         this.fetchNewsDetails(this.newsTitle);
@@ -34,10 +36,21 @@ export class NewsDetailComponent implements OnInit {
   fetchNewsDetails(slug: string): void {
     this.newsService.getTopStories().subscribe(
       (data) => {
-        const article = data.articles.find(article => this.transformToSlug(article.title) === slug);
+        const article = data.articles.find((article) => this.transformToSlug(article.title) === slug);
         if (article) {
-          this.news = { ...article, isTranslated: false }; // Inicializa la noticia con isTranslated en false
-          this.originalNews = { ...article }; // Guarda la noticia original
+          // Verifica si la noticia ya está traducida
+          const translatedStory = this.translationStateService.getTranslatedStory(article.title);
+          if (translatedStory) {
+            this.news = {
+              ...article,
+              title: translatedStory.translatedTitle,
+              description: translatedStory.translatedDescription,
+              isTranslated: true,
+            };
+          } else {
+            this.news = { ...article, isTranslated: false };
+          }
+          this.originalNews = { ...article };
         }
         this.isLoading = false;
       },
@@ -53,7 +66,10 @@ export class NewsDetailComponent implements OnInit {
   }
 
   translateNews(): void {
-    if (!this.news) return;
+    if (!this.news || this.news.isTranslated) {
+      console.log(`[NewsDetailComponent] La noticia "${this.news?.title}" ya está traducida. No se traducirá de nuevo.`);
+      return;
+    }
 
     this.isTranslating = true;
     this.translateService.translateText(this.news.title).subscribe(
@@ -65,6 +81,9 @@ export class NewsDetailComponent implements OnInit {
               if (this.news) {
                 this.news.description = responseDesc.translatedText;
                 this.news.isTranslated = true;
+
+                // Guardar la traducción en el servicio
+                this.translationStateService.setTranslatedStory(this.news);
                 this.isTranslating = false;
               }
             },
@@ -90,6 +109,9 @@ export class NewsDetailComponent implements OnInit {
       this.news.title = this.originalNews.title;
       this.news.description = this.originalNews.description;
       this.news.isTranslated = false;
+
+      // Actualizar el servicio con la noticia restaurada
+      this.translationStateService.setTranslatedStory(this.news);
     } else {
       // Traducir la noticia
       this.translateNews();

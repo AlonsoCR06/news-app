@@ -2,11 +2,11 @@
   <div class="row">
     <!-- Noticia principal -->
     <div class="col-7" *ngIf="!isLoading && topStories.length > 0">
-      <img [src]="topStories[0].urlToImage" alt="{{ topStories[0].title }}" class="story-detail__img mb-4" />
+      <img [src]="topStories[0].urlToImage" alt="{{ topStories[0].translatedTitle || topStories[0].title }}" class="story-detail__img mb-4" />
       <a [routerLink]="['/news', originalTopStories[0].title | slugify]" class="large-title main-story-title">
-        {{ topStories[0].title }}
+        {{ topStories[0].translatedTitle || topStories[0].title }}
       </a>
-      <p class="main-story-description">{{ topStories[0].description }}</p>
+      <p class="main-story-description">{{ topStories[0].translatedDescription || topStories[0].description }}</p>
       <p class="author">{{ topStories[0].author }}</p>
       <button (click)="translateStory(topStories[0], 0)" [disabled]="isTranslating || topStories[0].isTranslated">
         <img src="images/spain.png" alt="" style="height: 30px;">
@@ -23,7 +23,7 @@
         <ol>
           <li *ngFor="let story of topStories.slice(1, 6); let i = index" class="top-stories__item">
             <a [routerLink]="['/news', originalTopStories[i + 1].title | slugify]" class="small-title">
-              {{ story.title }}
+              {{ story.translatedTitle || story.title }}
             </a>
             <p class="author mt-4">{{ story.source.name }}</p>
             <div class="buttons">
@@ -45,9 +45,9 @@
     <div class="col-3 p-2" *ngFor="let story of visibleStories; let i = index">
       <img style="width: 100%; height: 400px; object-fit: cover;" [src]="story.urlToImage || 'https://picsum.photos/200/300'" alt="Imagen">
       <a [routerLink]="['/news', originalTopStories[i + 6].title | slugify]" class="small-title">
-        {{ story.title }}
+        {{ story.translatedTitle || story.title }} <!-- Usar translatedTitle -->
       </a>
-      <p class="main-story-description">{{ story.description }}</p>
+      <p class="main-story-description">{{ story.translatedDescription || story.description }}</p> <!-- Usar translatedDescription -->
       <p class="author mt-4">{{ story.source.name }}</p>
       <div class="buttons">
         <button (click)="translateStory(story, i + 6)" [disabled]="isTranslating || story.isTranslated">

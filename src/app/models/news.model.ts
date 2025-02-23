@@ -1,10 +1,1 @@
-export interface News {
-  title: string;
-  description: string;
-  urlToImage?: string;
-  source: {
-    name: string;
-  };
-  publishedAt: string;
-  isTranslated?: boolean; // Agrega esta propiedad
-}
+export interface News { title: string; author: string; description: string; urlToImage?: string; source: { name: string; }; publishedAt: string; isTranslated?: boolean; translatedTitle: string; translatedDescription: string; }
