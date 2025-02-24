@@ -113,11 +113,13 @@ export class TopStoriesComponent implements OnInit {
 
   toggleTranslation(story: News, index: number): void {
     if (this.topStories[index].isTranslated) {
-      // Restaurar la noticia original
+      // Restaurar la noticia original (inglés)
       this.topStories[index].title = this.originalTopStories[index].title;
       this.topStories[index].description = this.originalTopStories[index].description;
+      this.topStories[index].translatedTitle = this.originalTopStories[index].title; // Restaurar translatedTitle
+      this.topStories[index].translatedDescription = this.originalTopStories[index].description; // Restaurar translatedDescription
       this.topStories[index].isTranslated = false;
-
+  
       // Actualizar el servicio con la noticia restaurada
       const restoredStory = {
         ...this.topStories[index],
@@ -125,14 +127,17 @@ export class TopStoriesComponent implements OnInit {
         translatedDescription: this.originalTopStories[index].description,
       };
       this.translationStateService.setTranslatedStory(restoredStory);
-
+  
       // Actualizar visibleStories si la noticia restaurada está en ella
       const visibleIndex = this.visibleStories.findIndex(s => s.title === story.title);
       if (visibleIndex !== -1) {
         this.visibleStories[visibleIndex] = restoredStory;
       }
+    } else if (!this.topStories[index].isTranslated && this.topStories[index].title === this.originalTopStories[index].title) {
+      // Si la noticia ya está en inglés, no hacer nada
+      console.log(`[TopStoriesComponent] La noticia "${story.title}" ya está en inglés. No se traducirá.`);
     } else {
-      // Traducir la noticia
+      // Traducir la noticia al español
       this.translateStory(story, index);
     }
   }
