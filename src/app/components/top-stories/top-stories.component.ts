@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { NewsService } from '../../services/news.service';
 import { TranslateService } from '../../services/translate.service';
-import { TranslationStateService } from '../../services/translation-state.service'; // Importa el servicio
-import { News } from '../../models/news.model'; // Importa el modelo News
+import { TranslationStateService } from '../../services/translation-state.service';
+import { News } from '../../models/news.model';
 
 @Component({
   selector: 'app-top-stories',
@@ -23,7 +23,7 @@ export class TopStoriesComponent implements OnInit {
   constructor(
     private newsService: NewsService,
     private translateService: TranslateService,
-    private translationStateService: TranslationStateService // Inyecta el servicio
+    private translationStateService: TranslationStateService
   ) {}
 
   ngOnInit(): void {
@@ -78,14 +78,14 @@ export class TopStoriesComponent implements OnInit {
           (responseDesc) => {
             const translatedDescription = responseDesc.translatedText;
 
-            // Guardar la traducción en el servicio
+            // Guardar la traducción en el servicio usando el título original como clave
             const translatedStory = {
               ...story,
               translatedTitle: translatedTitle,
               translatedDescription: translatedDescription,
               isTranslated: true,
             };
-            this.translationStateService.setTranslatedStory(translatedStory);
+            this.translationStateService.setTranslatedStory(translatedStory, this.originalTopStories[index].title);
 
             // Actualizar la noticia en la lista
             this.topStories[index] = translatedStory;
@@ -119,19 +119,14 @@ export class TopStoriesComponent implements OnInit {
       this.topStories[index].translatedTitle = this.originalTopStories[index].title; // Restaurar translatedTitle
       this.topStories[index].translatedDescription = this.originalTopStories[index].description; // Restaurar translatedDescription
       this.topStories[index].isTranslated = false;
-  
-      // Actualizar el servicio con la noticia restaurada
-      const restoredStory = {
-        ...this.topStories[index],
-        translatedTitle: this.originalTopStories[index].title,
-        translatedDescription: this.originalTopStories[index].description,
-      };
-      this.translationStateService.setTranslatedStory(restoredStory);
-  
+
+      // Eliminar la traducción del servicio
+      this.translationStateService.removeTranslatedStory(this.originalTopStories[index].title);
+
       // Actualizar visibleStories si la noticia restaurada está en ella
       const visibleIndex = this.visibleStories.findIndex(s => s.title === story.title);
       if (visibleIndex !== -1) {
-        this.visibleStories[visibleIndex] = restoredStory;
+        this.visibleStories[visibleIndex] = this.topStories[index];
       }
     } else if (!this.topStories[index].isTranslated && this.topStories[index].title === this.originalTopStories[index].title) {
       // Si la noticia ya está en inglés, no hacer nada

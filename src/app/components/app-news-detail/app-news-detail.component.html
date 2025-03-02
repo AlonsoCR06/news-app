@@ -8,6 +8,10 @@
         <h2>{{ news.title }}</h2>
         <p><strong>Publicado por:</strong> {{ news.source.name }}</p>
         <p><strong>Fecha:</strong> {{ news.publishedAt | date }}</p>
+        <!-- Mostrar el div solo si la noticia está traducida -->
+        <div *ngIf="news.isTranslated" style="background-color: green; height: 30px; width: 100%;">
+          <p style="color: white; text-align: center;">Esta noticia fue traducida</p>
+        </div>
 
         <!-- Imagen de la noticia (si existe) -->
         <div *ngIf="news.urlToImage">
@@ -20,10 +24,12 @@
 
         <!-- Botones de traducción -->
         <div class="buttons">
+          <!-- Botón de español: deshabilitado si la noticia ya está traducida -->
           <button (click)="translateNews()" [disabled]="isTranslating || news.isTranslated">
             <img src="images/spain.png" alt="" style="height: 30px;">
           </button>
-          <button (click)="toggleTranslation()">
+          <!-- Botón de inglés: deshabilitado si la noticia ya está en inglés -->
+          <button (click)="toggleTranslation()" [disabled]="isTranslating || !news.isTranslated">
             <img src="images/united-kingdom.png" alt="" style="height: 30px;">
           </button>
         </div>

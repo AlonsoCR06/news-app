@@ -24,13 +24,23 @@ export class TranslationStateService {
   /**
    * Guarda una noticia traducida.
    * @param news Noticia traducida.
+   * @param originalTitle Título original de la noticia (clave para guardar).
    */
-  setTranslatedStory(news: News): void {
+  setTranslatedStory(news: News, originalTitle: string): void {
     console.log(
-      `[TranslationStateService] Guardando traducción para: "${news.title}"`,
+      `[TranslationStateService] Guardando traducción para: "${originalTitle}"`,
       news
     );
-    this.translatedStories[news.title] = news; // Usa el título original como clave
+    this.translatedStories[originalTitle] = news; // Usa el título original como clave
+  }
+
+  /**
+   * Elimina una traducción del servicio.
+   * @param title Título original de la noticia.
+   */
+  removeTranslatedStory(title: string): void {
+    console.log(`[TranslationStateService] Eliminando traducción para: "${title}"`);
+    delete this.translatedStories[title];
   }
 
   /**

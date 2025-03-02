@@ -3,6 +3,9 @@
     <!-- Noticia principal -->
     <div class="col-7" *ngIf="!isLoading && topStories.length > 0">
       <img [src]="topStories[0].urlToImage" alt="{{ topStories[0].translatedTitle || topStories[0].title }}" class="story-detail__img mb-4" />
+      <div *ngIf="topStories[0].isTranslated" style="background-color: green; height: 30px; width: 100%;">
+        <p style="color: white; text-align: center;">Esta noticia fue traducida</p>
+      </div>
       <a [routerLink]="['/news', originalTopStories[0].title | slugify]" class="large-title main-story-title">
         {{ topStories[0].translatedTitle || topStories[0].title }}
       </a>
@@ -22,6 +25,9 @@
         <h2 class="md-title pb-2">{{ translatedHeader || originalHeader }}</h2>
         <ol>
           <li *ngFor="let story of topStories.slice(1, 6); let i = index" class="top-stories__item">
+            <div *ngIf="story.isTranslated" style="background-color: green; height: 30px; width: 100%;">
+              <p style="color: white; text-align: center;">Esta noticia fue traducida</p>
+            </div>
             <a [routerLink]="['/news', originalTopStories[i + 1].title | slugify]" class="small-title">
               {{ story.translatedTitle || story.title }}
             </a>
@@ -44,6 +50,9 @@
   <div class="row">
     <div class="col-3 p-2" *ngFor="let story of visibleStories; let i = index">
       <img style="width: 100%; height: 400px; object-fit: cover;" [src]="story.urlToImage || 'https://picsum.photos/200/300'" alt="Imagen">
+      <div *ngIf="story.isTranslated" style="background-color: green; height: 30px; width: 100%;">
+        <p style="color: white; text-align: center;">Esta noticia fue traducida</p>
+      </div>
       <a [routerLink]="['/news', originalTopStories[i + 6].title | slugify]" class="small-title">
         {{ story.translatedTitle || story.title }} <!-- Usar translatedTitle -->
       </a>
